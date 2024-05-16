@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/reports")
 public class ReportController {
-    public static final MediaType APPLICATION_PDF = null;
     @GetMapping(path = "/", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> helloWorld() {
         return null;
