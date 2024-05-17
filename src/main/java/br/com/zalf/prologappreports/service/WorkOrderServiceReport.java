@@ -20,9 +20,7 @@ public class WorkOrderServiceReport {
     public byte[] getReportDto() {
         try {
             final var inputStream =
-                    new FileInputStream(
-                            "C:/dev/projects/PrologWebService/src/main/resources/relatorios/relatorio-de-servicos" +
-                                    "-realizados.jasper");
+                    getClass().getResourceAsStream("/relatorios/relatorio-de-servicos-realizados.jasper");
 
             final var parameters = new HashMap<String, Object>();
             parameters.put("REPORT_LOCALE", new Locale("pt", "BR"));
@@ -37,10 +35,6 @@ public class WorkOrderServiceReport {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public List<WorkOrderStratificationServiceReportDto> crateWorkOrderStratificationServiceReportDto() {
-        return Collections.nCopies(100, WorkOrderStratificationServiceReportDto.builder().build());
     }
 }
 
