@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PrologappReportsApplication {
+public class PrologAppReportsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PrologappReportsApplication.class, args);
+		SpringApplication.run(PrologAppReportsApplication.class, args);
 	}
 
 }
