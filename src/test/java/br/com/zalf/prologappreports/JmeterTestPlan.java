@@ -17,59 +17,37 @@ import org.apache.jmeter.threads.gui.ThreadGroupGui;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.collections.HashTree;
 import org.apache.jorphan.collections.ListedHashTree;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Locale;
 
 public class JmeterTestPlan {
     /**
-     * Used to create Jmeter test plan, also saves testplan as a .jmx file
-     * in resource folder
+     * Used to create Jmeter test plan.
      */
-    public ListedHashTree createTestPLan(String domainName,
-                                         String path,
-                                         String httpMethod,
-                                         int threadCount) {
-        JMeterUtils.setJMeterHome("target/jmeter");
-
+    public ListedHashTree createTestPLan(@NotNull final String testPlanName,
+                                         @NotNull final String domainName,
+                                         @NotNull final String path,
+                                         @NotNull final String httpMethod,
+                                         final int threadCount,
+                                         final int numberOfRequestsPerThread,
+                                         @NotNull final String outPutCsvFile) {
         //import the jmeter properties, as is provided
         JMeterUtils.loadJMeterProperties("src/main/resources/jmeter.properties");
         //Set locale
-        JMeterUtils.initLocale();
+        JMeterUtils.setLocale(new Locale("pt", "BR"));
 
         //Will be used to compose the testPlan, acts as container
-        ListedHashTree hashTree = new ListedHashTree();
+        final var hashTree = new ListedHashTree();
 
         //HTTPSampler acts as the container for the HTTP request to the site.
-        HTTPSampler httpHandler = new HTTPSampler();
-        httpHandler.setDomain(domainName);
-        httpHandler.setPort(8080);
-        httpHandler.setProtocol("http");
-        httpHandler.setPath(path);
-        httpHandler.setMethod(httpMethod);
-        httpHandler.setName("Jasper Reports PDF");
-
-        //Adding pieces to enable this to be exported to a .jmx and loaded
-        //into Jmeter
-        httpHandler.setProperty(TestElement.TEST_CLASS, HTTPSamplerProxy.class.getName());
-        httpHandler.setProperty(TestElement.GUI_CLASS, HttpTestSampleGui.class.getName());
+        final var httpHandler = this.getHttpSampler(domainName, path, httpMethod);
 
         //LoopController, handles iteration settings
-        LoopController loopController = new LoopController();
-        loopController.setLoops(5);
-        loopController.setFirst(true);
-        loopController.initialize();
-
-        //Thread groups/user count
-        SetupThreadGroup setupThreadGroup = new SetupThreadGroup();
-        setupThreadGroup.setName("Users Groups");
-        setupThreadGroup.setNumThreads(threadCount);
-        setupThreadGroup.setRampUp(1);
-        setupThreadGroup.setSamplerController(loopController);
-
-        //Adding GUI pieces for Jmeter
-        setupThreadGroup.setProperty(TestElement.TEST_CLASS, ThreadGroup.class.getName());
-        setupThreadGroup.setProperty(TestElement.GUI_CLASS, ThreadGroupGui.class.getName());
+        final var setupThreadGroup = this.getSetupThreadGroup(threadCount, numberOfRequestsPerThread);
 
         //Create the tesPlan item
-        TestPlan testPlan = new TestPlan("Jasper Reports PDF");
+        final var testPlan = new TestPlan(testPlanName);
         //Adding GUI pieces for Jmeter gui
         testPlan.setProperty(TestElement.TEST_CLASS, TestPlan.class.getName());
         testPlan.setProperty(TestElement.GUI_CLASS, TestPlanGui.class.getName());
@@ -81,25 +59,58 @@ public class JmeterTestPlan {
         groupTree.add(httpHandler);
 
         //Added summarizer for logging meta info
-        Summariser summariser = new Summariser("summaryOfResults");
+        final var summariser = new Summariser("summaryOfResults");
 
         //Collect results
-
-        ResultCollector resultCollector = new ResultCollector(summariser);
-
-        resultCollector.setFilename("src/main/resources/Results.csv");
+        final var resultCollector = new ResultCollector(summariser);
+        resultCollector.setFilename(outPutCsvFile);
 
         hashTree.add(hashTree.getArray()[0], resultCollector);
 
         return hashTree;
     }
 
-    public void engineRunner(HashTree hashTree) {
+    @NotNull
+    private SetupThreadGroup getSetupThreadGroup(final int threadCount,
+                                                 final int numberOfRequestsPerThread) {
+        final var loopController = new LoopController();
+        loopController.setLoops(numberOfRequestsPerThread);
+        loopController.setFirst(false);
+        loopController.initialize();
+
+        //Thread groups/user count
+        final var setupThreadGroup = new SetupThreadGroup();
+        setupThreadGroup.setName("Users Groups");
+        setupThreadGroup.setNumThreads(threadCount);
+        setupThreadGroup.setRampUp(1);
+        setupThreadGroup.setSamplerController(loopController);
+        //Adding GUI pieces for Jmeter
+        setupThreadGroup.setProperty(TestElement.TEST_CLASS, ThreadGroup.class.getName());
+        setupThreadGroup.setProperty(TestElement.GUI_CLASS, ThreadGroupGui.class.getName());
+        return setupThreadGroup;
+    }
+
+    @NotNull
+    private HTTPSampler getHttpSampler(@NotNull final String domainName,
+                                       @NotNull final String path,
+                                       @NotNull final String httpMethod) {
+        HTTPSampler httpHandler = new HTTPSampler();
+        httpHandler.setDomain(domainName);
+        httpHandler.setPort(8080);
+        httpHandler.setProtocol("http");
+        httpHandler.setPath(path);
+        httpHandler.setMethod(httpMethod);
+        httpHandler.setName("Jasper Reports PDF");
+        //Adding pieces to enable this to be exported to a .jmx and loaded into Jmeter
+        httpHandler.setProperty(TestElement.TEST_CLASS, HTTPSamplerProxy.class.getName());
+        httpHandler.setProperty(TestElement.GUI_CLASS, HttpTestSampleGui.class.getName());
+        return httpHandler;
+    }
+
+    public void engineRunner(@NotNull final HashTree hashTree) {
         //Create the Jmeter engine to be used (Similar to Android's GUI engine)
-        StandardJMeterEngine jEngine = new StandardJMeterEngine();
-
+        final var jEngine = new StandardJMeterEngine();
         jEngine.configure(hashTree);
-
         jEngine.run();
     }
 }
