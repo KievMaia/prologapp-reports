@@ -18,8 +18,6 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.collections.HashTree;
 import org.apache.jorphan.collections.ListedHashTree;
 
-import java.io.IOException;
-
 public class JmeterTestPlan {
     /**
      * Used to create Jmeter test plan, also saves testplan as a .jmx file
