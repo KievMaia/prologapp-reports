@@ -8,16 +8,31 @@ import org.springframework.boot.test.context.SpringBootTest;
 class PrologAppReportsApplicationTests {
 
     @Test
-    public void contextLoads() {
-        System.out.println("hello world");
+    public void shouldReturnSummaryOfResultsWhenTestTenThreadsAndFiveRequests() {
+        final var testPlanClient = new JmeterTestPlan();
+        ListedHashTree createdTree = testPlanClient.createTestPLan("Jasper Reports PDF",
+                                                                   "localhost",
+                                                                   "/reports",
+                                                                   "GET",
+                                                                   10,
+                                                                   5,
+                                                                   "src/main/resources/results/results-10users" +
+                                                                           "-5requests.csv");
 
-        JmeterTestPlan testPlanClient = new JmeterTestPlan();
+        testPlanClient.engineRunner(createdTree);
+    }
 
-        ListedHashTree createdTree = testPlanClient.createTestPLan(
-                "localhost",
-                "/reports",
-                "GET",
-                10);
+    @Test
+    public void shouldReturnSummaryOfResultsWhenTestOneThousandNinetySixThreadsAndOneRequestEach() {
+        final var testPlanClient = new JmeterTestPlan();
+        ListedHashTree createdTree = testPlanClient.createTestPLan("Jasper Reports PDF",
+                                                                   "localhost",
+                                                                   "/reports",
+                                                                   "GET",
+                                                                   1096,
+                                                                   1,
+                                                                   "src/main/resources/results/results-1096users" +
+                                                                           "-5requests.csv");
 
         testPlanClient.engineRunner(createdTree);
     }
