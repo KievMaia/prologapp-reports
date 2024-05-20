@@ -15,7 +15,7 @@ class PrologAppReportsApplicationTests {
 
         ListedHashTree createdTree = testPlanClient.createTestPLan(
                 "localhost",
-                "reports",
+                "/reports",
                 "GET",
                 10);
 
