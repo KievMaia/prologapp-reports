@@ -42,6 +42,7 @@ public class JmeterTestPlan {
         //HTTPSampler acts as the container for the HTTP request to the site.
         HTTPSampler httpHandler = new HTTPSampler();
         httpHandler.setDomain(domainName);
+        httpHandler.setPort(8080);
         httpHandler.setProtocol("http");
         httpHandler.setPath(path);
         httpHandler.setMethod(httpMethod);
