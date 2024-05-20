@@ -21,8 +21,6 @@ import org.apache.jorphan.collections.ListedHashTree;
 import java.io.IOException;
 
 public class JmeterTestPlan {
-    public static final String QUERY_PARAMETER_VAR_NAME = "queryParams";
-
     /**
      * Used to create Jmeter test plan, also saves testplan as a .jmx file
      * in resource folder
@@ -30,7 +28,7 @@ public class JmeterTestPlan {
     public ListedHashTree createTestPLan(String domainName,
                                          String path,
                                          String httpMethod,
-                                         int threadCount) throws IOException {
+                                         int threadCount) {
         JMeterUtils.setJMeterHome("target/jmeter");
 
         //import the jmeter properties, as is provided
