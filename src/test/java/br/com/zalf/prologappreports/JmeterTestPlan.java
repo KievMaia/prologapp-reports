@@ -5,6 +5,7 @@ import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.control.LoopController;
 import org.apache.jmeter.control.gui.TestPlanGui;
 import org.apache.jmeter.engine.StandardJMeterEngine;
+import org.apache.jmeter.gui.action.HtmlReportGenerator;
 import org.apache.jmeter.protocol.http.control.Header;
 import org.apache.jmeter.protocol.http.control.HeaderManager;
 import org.apache.jmeter.protocol.http.control.gui.HttpTestSampleGui;
@@ -32,9 +33,9 @@ public class JmeterTestPlan {
      */
     public ListedHashTree createTestPlan(@NotNull final String testPlanName,
                                          final int threadCount,
-                                         int numberOfRequestsPerThread,
+                                         final int numberOfRequestsPerThread,
                                          @NotNull final List<HttpRequestCreateObject> httpRequestCreateObject,
-                                         @NotNull String outPutCsvFile) {
+                                         @NotNull final String outPutCsvFile) {
         //import the jmeter properties, as is provided
         JMeterUtils.loadJMeterProperties("src/main/resources/jmeter.properties");
         //Set locale
@@ -42,9 +43,6 @@ public class JmeterTestPlan {
 
         //Will be used to compose the testPlan, acts as container
         final var hashTree = new ListedHashTree();
-
-        //LoopController, handles iteration settings
-        final var setupThreadGroup = this.getSetupThreadGroup(threadCount, numberOfRequestsPerThread);
 
         //Create the tesPlan item
         final var testPlan = new TestPlan(testPlanName);
@@ -54,6 +52,10 @@ public class JmeterTestPlan {
         testPlan.setUserDefinedVariables((Arguments) new ArgumentsPanel().createTestElement());
 
         hashTree.add(testPlan);
+
+        //LoopController, handles iteration settings
+        final var setupThreadGroup = this.getSetupThreadGroup(threadCount, numberOfRequestsPerThread);
+
         final var groupTree = hashTree.add(testPlan, setupThreadGroup);
 
         //HTTPSampler acts as the container for the HTTP request to the site.
@@ -129,6 +131,15 @@ public class JmeterTestPlan {
         httpHandler.setProperty(TestElement.TEST_CLASS, HTTPSamplerProxy.class.getName());
         httpHandler.setProperty(TestElement.GUI_CLASS, HttpTestSampleGui.class.getName());
         return httpHandler;
+    }
+
+    public void htmlReportGenerator() {
+        final var jmeterHomeDir = System.getenv("JMETER_HOME");
+        JMeterUtils.setJMeterHome(jmeterHomeDir);
+        final var htmlReportGenerator = new HtmlReportGenerator("C:/dev/projects/prologapp-reports/src/main/resources/results/results-compare.csv",
+                                                                "src/main/resources/user.properties",
+                                                                null);
+        htmlReportGenerator.run();
     }
 
     public void engineRunner(@NotNull final HashTree hashTree) {
