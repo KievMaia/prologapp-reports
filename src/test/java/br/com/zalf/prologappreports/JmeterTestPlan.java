@@ -5,6 +5,8 @@ import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.control.LoopController;
 import org.apache.jmeter.control.gui.TestPlanGui;
 import org.apache.jmeter.engine.StandardJMeterEngine;
+import org.apache.jmeter.protocol.http.control.Header;
+import org.apache.jmeter.protocol.http.control.HeaderManager;
 import org.apache.jmeter.protocol.http.control.gui.HttpTestSampleGui;
 import org.apache.jmeter.protocol.http.sampler.HTTPSampler;
 import org.apache.jmeter.protocol.http.sampler.HTTPSamplerProxy;
@@ -18,20 +20,21 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.collections.HashTree;
 import org.apache.jorphan.collections.ListedHashTree;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class JmeterTestPlan {
     /**
      * Used to create Jmeter test plan.
      */
-    public ListedHashTree createTestPLan(@NotNull final String testPlanName,
-                                         @NotNull final String domainName,
-                                         @NotNull final String path,
-                                         @NotNull final String httpMethod,
+    public ListedHashTree createTestPlan(@NotNull final String testPlanName,
                                          final int threadCount,
-                                         final int numberOfRequestsPerThread,
-                                         @NotNull final String outPutCsvFile) {
+                                         int numberOfRequestsPerThread,
+                                         @NotNull final List<HttpRequestCreateObject> httpRequestCreateObject,
+                                         @NotNull String outPutCsvFile) {
         //import the jmeter properties, as is provided
         JMeterUtils.loadJMeterProperties("src/main/resources/jmeter.properties");
         //Set locale
@@ -39,9 +42,6 @@ public class JmeterTestPlan {
 
         //Will be used to compose the testPlan, acts as container
         final var hashTree = new ListedHashTree();
-
-        //HTTPSampler acts as the container for the HTTP request to the site.
-        final var httpHandler = this.getHttpSampler(domainName, path, httpMethod);
 
         //LoopController, handles iteration settings
         final var setupThreadGroup = this.getSetupThreadGroup(threadCount, numberOfRequestsPerThread);
@@ -54,9 +54,18 @@ public class JmeterTestPlan {
         testPlan.setUserDefinedVariables((Arguments) new ArgumentsPanel().createTestElement());
 
         hashTree.add(testPlan);
+        final var groupTree = hashTree.add(testPlan, setupThreadGroup);
 
-        HashTree groupTree = hashTree.add(testPlan, setupThreadGroup);
-        groupTree.add(httpHandler);
+        //HTTPSampler acts as the container for the HTTP request to the site.
+        final var httpRequests = new ArrayList<HTTPSampler>();
+        httpRequestCreateObject.forEach(request -> httpRequests.add(this.getHttpSampler(request.getDomainName(),
+                                                                                        request.getPath(),
+                                                                                        request.getHttpMethod(),
+                                                                                        request.getPort(),
+                                                                                        request.getProtocol(),
+                                                                                        request.getHeaderName(),
+                                                                                        request.getHeaderValue())));
+        httpRequests.forEach(groupTree::add);
 
         //Added summarizer for logging meta info
         final var summariser = new Summariser("summaryOfResults");
@@ -93,14 +102,29 @@ public class JmeterTestPlan {
     @NotNull
     private HTTPSampler getHttpSampler(@NotNull final String domainName,
                                        @NotNull final String path,
-                                       @NotNull final String httpMethod) {
+                                       @NotNull final String httpMethod,
+                                       final int port,
+                                       @NotNull final String protocol,
+                                       @Nullable final String headerName,
+                                       @Nullable final String headerValue) {
         HTTPSampler httpHandler = new HTTPSampler();
         httpHandler.setDomain(domainName);
-        httpHandler.setPort(8080);
-        httpHandler.setProtocol("http");
+        httpHandler.setPort(port);
+        httpHandler.setProtocol(protocol);
         httpHandler.setPath(path);
         httpHandler.setMethod(httpMethod);
         httpHandler.setName("Jasper Reports PDF");
+
+        // Create a new HTTP Header object
+        Header header = new Header();
+        header.setName(headerName); // Replace with your desired header name
+        header.setValue(headerValue); // Replace with your actual token
+
+        // Add the header to the sampler
+        HeaderManager headers = new HeaderManager();
+        headers.add(header);
+        httpHandler.setHeaderManager(headers);
+
         //Adding pieces to enable this to be exported to a .jmx and loaded into Jmeter
         httpHandler.setProperty(TestElement.TEST_CLASS, HTTPSamplerProxy.class.getName());
         httpHandler.setProperty(TestElement.GUI_CLASS, HttpTestSampleGui.class.getName());
