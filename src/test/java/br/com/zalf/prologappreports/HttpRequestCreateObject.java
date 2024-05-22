@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 @Builder(toBuilder = true, setterPrefix = "with")
 public class HttpRequestCreateObject {
     @NotNull
+    private final String requestName;
+    @NotNull
     private final String domainName;
     @NotNull
     private final String path;
