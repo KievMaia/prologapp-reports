@@ -36,6 +36,8 @@ public class JmeterTestPlan {
                                          final int numberOfRequestsPerThread,
                                          @NotNull final List<HttpRequestCreateObject> httpRequestCreateObject,
                                          @NotNull final String outPutCsvFile) {
+        final var jmeterHomeDir = System.getenv("JMETER_HOME");
+        JMeterUtils.setJMeterHome(jmeterHomeDir);
         //import the jmeter properties, as is provided
         JMeterUtils.loadJMeterProperties("src/main/resources/jmeter.properties");
         //Set locale
@@ -141,8 +143,6 @@ public class JmeterTestPlan {
     }
 
     public void htmlReportGenerator() {
-        final var jmeterHomeDir = System.getenv("JMETER_HOME");
-        JMeterUtils.setJMeterHome(jmeterHomeDir);
         final var htmlReportGenerator = new HtmlReportGenerator(
                 "C:/dev/projects/prologapp-reports/src/main/resources/results/results-compare.csv",
                 "src/main/resources/user.properties",
