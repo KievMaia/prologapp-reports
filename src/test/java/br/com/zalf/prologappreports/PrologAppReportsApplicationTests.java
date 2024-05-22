@@ -19,6 +19,7 @@ class PrologAppReportsApplicationTests {
     public void shouldReturnSummaryOfResultsWhenTestTenThreadsAndFiveRequests() {
         final var httpRequests = new ArrayList<HttpRequestCreateObject>();
         httpRequests.add(HttpRequestCreateObject.builder()
+                                 .withRequestName("Jasper Reports PDF")
                                  .withDomainName("localhost")
                                  .withPath("/reports")
                                  .withHttpMethod("GET")
@@ -26,6 +27,7 @@ class PrologAppReportsApplicationTests {
                                  .withProtocol("http")
                                  .build());
         httpRequests.add(HttpRequestCreateObject.builder()
+                                 .withRequestName("Checklist offline")
                                  .withDomainName("localhost")
                                  .withPath(
                                          "/prolog/v2/checklist-offline/offline-support?codUnidade=215" +
