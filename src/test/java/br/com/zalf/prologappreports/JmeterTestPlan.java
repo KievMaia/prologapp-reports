@@ -56,17 +56,17 @@ public class JmeterTestPlan {
         //LoopController, handles iteration settings
         final var setupThreadGroup = this.getSetupThreadGroup(threadCount, numberOfRequestsPerThread);
 
-        final var groupTree = hashTree.add(testPlan, setupThreadGroup);
-
         //HTTPSampler acts as the container for the HTTP request to the site.
         final var httpRequests = new ArrayList<HTTPSampler>();
-        httpRequestCreateObject.forEach(request -> httpRequests.add(this.getHttpSampler(request.getDomainName(),
+        httpRequestCreateObject.forEach(request -> httpRequests.add(this.getHttpSampler(request.getRequestName(),
+                                                                                        request.getDomainName(),
                                                                                         request.getPath(),
                                                                                         request.getHttpMethod(),
                                                                                         request.getPort(),
                                                                                         request.getProtocol(),
                                                                                         request.getHeaderName(),
                                                                                         request.getHeaderValue())));
+        final var groupTree = hashTree.add(testPlan, setupThreadGroup);
         httpRequests.forEach(groupTree::add);
 
         //Added summarizer for logging meta info
@@ -84,10 +84,7 @@ public class JmeterTestPlan {
     @NotNull
     private SetupThreadGroup getSetupThreadGroup(final int threadCount,
                                                  final int numberOfRequestsPerThread) {
-        final var loopController = new LoopController();
-        loopController.setLoops(numberOfRequestsPerThread);
-        loopController.setFirst(false);
-        loopController.initialize();
+        final var loopController = this.getLoopController(numberOfRequestsPerThread);
 
         //Thread groups/user count
         final var setupThreadGroup = new SetupThreadGroup();
@@ -102,7 +99,17 @@ public class JmeterTestPlan {
     }
 
     @NotNull
-    private HTTPSampler getHttpSampler(@NotNull final String domainName,
+    private LoopController getLoopController(final int numberOfRequestsPerThread) {
+        final var loopController = new LoopController();
+        loopController.setLoops(numberOfRequestsPerThread);
+        loopController.setFirst(false);
+        loopController.initialize();
+        return loopController;
+    }
+
+    @NotNull
+    private HTTPSampler getHttpSampler(@NotNull final String requestName,
+                                       @NotNull final String domainName,
                                        @NotNull final String path,
                                        @NotNull final String httpMethod,
                                        final int port,
@@ -115,7 +122,7 @@ public class JmeterTestPlan {
         httpHandler.setProtocol(protocol);
         httpHandler.setPath(path);
         httpHandler.setMethod(httpMethod);
-        httpHandler.setName("Jasper Reports PDF");
+        httpHandler.setName(requestName);
 
         // Create a new HTTP Header object
         Header header = new Header();
@@ -136,9 +143,10 @@ public class JmeterTestPlan {
     public void htmlReportGenerator() {
         final var jmeterHomeDir = System.getenv("JMETER_HOME");
         JMeterUtils.setJMeterHome(jmeterHomeDir);
-        final var htmlReportGenerator = new HtmlReportGenerator("C:/dev/projects/prologapp-reports/src/main/resources/results/results-compare.csv",
-                                                                "src/main/resources/user.properties",
-                                                                null);
+        final var htmlReportGenerator = new HtmlReportGenerator(
+                "C:/dev/projects/prologapp-reports/src/main/resources/results/results-compare.csv",
+                "src/main/resources/user.properties",
+                null);
         htmlReportGenerator.run();
     }
 
