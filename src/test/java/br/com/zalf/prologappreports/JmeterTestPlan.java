@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Locale;
 
 public class JmeterTestPlan {
+    private static final String JMETER_PROPERTIES = "src/main/resources/jmeter.properties";
+    private static final String USER_PROPERTIES = "src/main/resources/user.properties";
+
     /**
      * Used to create Jmeter test plan.
      */
@@ -39,7 +42,7 @@ public class JmeterTestPlan {
         final var jmeterHomeDir = System.getenv("JMETER_HOME");
         JMeterUtils.setJMeterHome(jmeterHomeDir);
         //import the jmeter properties, as is provided
-        JMeterUtils.loadJMeterProperties("src/main/resources/jmeter.properties");
+        JMeterUtils.loadJMeterProperties(JMETER_PROPERTIES);
         //Set locale
         JMeterUtils.setLocale(new Locale("pt", "BR"));
 
@@ -142,10 +145,10 @@ public class JmeterTestPlan {
         return httpHandler;
     }
 
-    public void htmlReportGenerator() {
+    public void htmlReportGenerator(@NotNull final String reportName) {
         final var htmlReportGenerator = new HtmlReportGenerator(
-                "C:/dev/projects/prologapp-reports/src/main/resources/results/results-compare.csv",
-                "src/main/resources/user.properties",
+                reportName,
+                USER_PROPERTIES,
                 null);
         htmlReportGenerator.run();
     }

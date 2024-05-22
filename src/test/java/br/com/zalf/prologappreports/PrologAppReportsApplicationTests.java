@@ -16,7 +16,7 @@ class PrologAppReportsApplicationTests {
 
     @Test
     @Order(1)
-    public void shouldReturnSummaryOfResultsWhenTestTenThreadsAndFiveRequests() {
+    public void shouldReturnSummaryOfResultsWhenTestOneHundredThreadsAndTwoRequestsEachOne() {
         final var httpRequests = new ArrayList<HttpRequestCreateObject>();
         httpRequests.add(HttpRequestCreateObject.builder()
                                  .withRequestName("Jasper Reports PDF")
@@ -40,8 +40,8 @@ class PrologAppReportsApplicationTests {
                                  .build());
         ListedHashTree createdTree =
                 testPlanClient.createTestPlan("Compare Pdf report and Checklist offline",
-                                              5,
-                                              1,
+                                              100,
+                                              2,
                                               httpRequests,
                                               "src/main/resources/results/results-compare.csv");
 
@@ -51,6 +51,6 @@ class PrologAppReportsApplicationTests {
     @Test
     @Order(2)
     public void generateHTMLDashboard() {
-        testPlanClient.htmlReportGenerator();
+        testPlanClient.htmlReportGenerator("C:/dev/projects/prologapp-reports/src/main/resources/results/results-compare.csv");
     }
 }
